@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
         MaterialTheme(colorScheme = darkColorScheme()) { Column(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF253B73), Color(0xFF090C17)))).padding(18.dp)) {
             Text("Engada Pochu", style = MaterialTheme.typography.headlineLarge, color = Color.White, fontWeight = FontWeight.Bold)
             Text("Tamil + English • stored only on this phone", color = Color(0xFFB5C2DB))
-            Row(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { Summary("Sent", sent, Color(0xFFFF796D)); Summary("Received", received, Color(0xFF00DFF5)); Summary("Balance", received - sent, Color.White) }
+            Row(Modifier.fillMaxWidth().padding(vertical = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { Summary("Sent", sent, Color(0xFFFF796D), Modifier.weight(1f)); Summary("Received", received, Color(0xFF00DFF5), Modifier.weight(1f)); Summary("Balance", received - sent, Color.White, Modifier.weight(1f)) }
             Button(onClick = { status = "Listening…"; speak("Listening"); listen { text = it; status = "Review before saving" } }, shape = CircleShape, modifier = Modifier.size(138.dp).align(Alignment.CenterHorizontally).semantics { contentDescription = "Start voice input" }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00DFF5))) { Text("🎙", style = MaterialTheme.typography.displaySmall) }
             Text(status, Modifier.align(Alignment.CenterHorizontally).padding(8.dp), color = Color.White)
             OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth(), label = { Text("Voice result or manual command") })
@@ -71,7 +71,7 @@ class MainActivity : ComponentActivity() {
             LazyColumn(Modifier.fillMaxWidth().padding(top = 12.dp)) { items(txs) { t -> Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Text("${t.kind}  ₹${t.amount}  ${if (t.kind == "SENT") "to" else "from"} ${t.person}\n${SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date(t.at))}", Modifier.padding(12.dp), color = if (t.kind == "SENT") Color(0xFFFF796D) else Color(0xFF00DFF5)) } } }
         } }
     }
-    @Composable private fun Summary(label: String, value: Double, color: Color) { Card(Modifier.weight(1f)) { Column(Modifier.padding(10.dp)) { Text(label, color = Color.Gray); Text("₹${"%.2f".format(value)}", color = color, fontWeight = FontWeight.Bold) } } }
+    @Composable private fun Summary(label: String, value: Double, color: Color, modifier: Modifier = Modifier) { Card(modifier) { Column(Modifier.padding(10.dp)) { Text(label, color = Color.Gray); Text("₹${"%.2f".format(value)}", color = color, fontWeight = FontWeight.Bold) } } }
     private fun parse(raw: String): Tx? { val s = raw.trim(); val m = Regex("(?i)(sent|paid|received)\\s+([0-9]+(?:\\.[0-9]+)?)\\s+(?:to|from)\\s+(.+)").find(s) ?: return null; val kind = if (m.groupValues[1].lowercase() == "received") "RECEIVED" else "SENT"; return Tx(System.currentTimeMillis(), kind, m.groupValues[3].trim(), m.groupValues[2].toDouble(), System.currentTimeMillis()) }
     override fun onDestroy() { recognizer?.destroy(); tts?.shutdown(); super.onDestroy() }
 }
